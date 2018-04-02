@@ -1,0 +1,4 @@
+﻿  5.c
+e:\github\infosec119\seleuchel_team\전세옥\week2\week2_assignment\week2_assignment\5.c(21): warning C4013: 'system'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
+e:\github\infosec119\seleuchel_team\전세옥\week2\week2_assignment\week2_assignment\5.c(33): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+  Week2_Assignment.vcxproj -> E:\GITHUB\Infosec119\seleuchel_Team\전세옥\Week2\Week2_Assignment\Debug\Week2_Assignment.exe
