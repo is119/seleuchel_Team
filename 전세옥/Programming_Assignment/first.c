@@ -45,11 +45,17 @@ struct Map
 	int EventNumber;
 	int Owner;
 	int OverWhelmingDegree;
+	COORD pos;
 };
 
 void InitMapAndPlayer(struct Player Players[], struct Map Maps[][7]);
 void DrawCurrentBoard(struct Player Players[], struct Map Maps[][7], int currentTurn);
 void PrintMapInfo(int i, int j, int startposx, int startposy, struct Map Maps[][7]);
+void DrawMapEdge(int i, int j);
+void DrawContents(struct Map Maps[][7]);
+void PlayersInfo(struct Player Players[], char tmp1[], char tmp2[], char buffer[], struct Map Maps[][7]);
+void CurrentPlayerInfo(struct Player Players[], int currentTurn, char tmp1[], char buffer[], struct Map Maps[][7]);
+void SearchMapPlace(int* x, int* y, struct Map Maps[][7], struct Player Players[], int PlayerNumber);
 
 int main (void)
 {
@@ -71,8 +77,8 @@ void InitMapAndPlayer(struct Player Players[], struct Map Maps[][7])
 	for(int i = 0; i < NumberOfPlayers; i++ )
 	{
 		Players[i].Order = i;
-		Players[i].CurrentPlaceX = 4;
-		Players[i].CurrentPlaceY = 6;
+		Players[i].CurrentPlaceX = 0;
+		Players[i].CurrentPlaceY = 0;
 		Players[i].Money = InitialCapital;
 		Players[i].NumberOfDepartment = 0;
 		for (int j = 0; j < 5; j++)
@@ -81,173 +87,181 @@ void InitMapAndPlayer(struct Player Players[], struct Map Maps[][7])
 			Players[i].Events[j] = 0;
 		}
 	}
-
+	
 	// 맵 초기화
-	int DepartmentPrice = ((rand() % 10) + 1) * 100;
-	
-	for(int i = 0; i < 5; i++)
+
 	{
-		for(int j = 0; j < 7; j++)
+		int DepartmentPrice = ((rand() % 10) + 1) * 100;
+
+		for (int i = 0; i < 5; i++)
 		{
-			/*for (int str = 0; str < 20; str++)
+			for (int j = 0; j < 7; j++)
 			{
+				/*for (int str = 0; str < 20; str++)
+				{
 				Maps[i][j].NameOfDepartment[str] = "0";
-			}*/
+				}*/
 
-			strcpy(Maps[i][j].NameOfDepartment, "NONE");
-			Maps[i][j].DepartmentOrder = 0;
-			Maps[i][j].DepartmentPrice = 0;
-			Maps[i][j].EventNumber = NONE;
-			Maps[i][j].Owner = 0;
-			Maps[i][j].OverWhelmingDegree = 0;
+				strcpy(Maps[i][j].NameOfDepartment, "NONE");
+				Maps[i][j].DepartmentOrder = 0;
+				Maps[i][j].DepartmentPrice = 0;
+				Maps[i][j].EventNumber = NONE;
+				Maps[i][j].Owner = 0;
+				Maps[i][j].OverWhelmingDegree = 0;
+				Maps[i][j].pos.X = 0;
+				Maps[i][j].pos.Y = 0;
+			}
 		}
+
+		srand(time(NULL));
+
+		// 이름, 학과순서, 가격, 이벤트 숫자, 소유주숫자, 장악정도
+
+		strcpy(Maps[0][0].NameOfDepartment, "장학금");
+		Maps[0][0].DepartmentOrder = 0;
+		Maps[0][0].DepartmentPrice = 0;
+		Maps[0][0].EventNumber = Scholarship;
+		Maps[0][0].Owner = NONE;
+		Maps[0][0].OverWhelmingDegree = NONE;
+		Maps[0][0].pos.X = 6;
+		Maps[0][0].pos.Y = 4;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[0][1].NameOfDepartment, "건축도시설계전공");
+		Maps[0][1].DepartmentOrder = 1;
+		Maps[0][1].DepartmentPrice = DepartmentPrice;
+		Maps[0][1].Owner = NONE;
+		Maps[0][1].OverWhelmingDegree = NONE;
+		Maps[0][1].pos.X = 22;
+		Maps[0][1].pos.Y = 4;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[0][2].NameOfDepartment, "건축공학전공");
+		Maps[0][2].DepartmentOrder = 2;
+		Maps[0][2].DepartmentPrice = DepartmentPrice;
+		Maps[0][2].Owner = NONE;
+		Maps[0][2].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[0][3].NameOfDepartment, "고분자공학전공");
+		Maps[0][3].DepartmentOrder = 3;
+		Maps[0][3].DepartmentPrice = DepartmentPrice;
+		Maps[0][3].Owner = NONE;
+		Maps[0][3].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[0][4].NameOfDepartment, "융합섬유공학전공");
+		Maps[0][4].DepartmentOrder = 4;
+		Maps[0][4].DepartmentPrice = DepartmentPrice;
+		Maps[0][4].Owner = NONE;
+		Maps[0][4].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[0][5].NameOfDepartment, "기계공학전공");
+		Maps[0][5].DepartmentOrder = 5;
+		Maps[0][5].DepartmentPrice = DepartmentPrice;
+		Maps[0][5].Owner = NONE;
+		Maps[0][5].OverWhelmingDegree = NONE;
+
+		strcpy(Maps[0][6].NameOfDepartment, "MT");
+		Maps[0][6].DepartmentOrder = 6;
+		Maps[0][6].DepartmentPrice = 0;
+		Maps[0][6].EventNumber = MT;
+		Maps[0][6].Owner = NONE;
+		Maps[0][6].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[1][6].NameOfDepartment, "전자정보통신공학전공");
+		Maps[1][6].DepartmentOrder = 7;
+		Maps[1][6].DepartmentPrice = DepartmentPrice;
+		Maps[1][6].Owner = NONE;
+		Maps[1][6].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[2][6].NameOfDepartment, "컴퓨터정보통신공학전공");
+		Maps[2][6].DepartmentOrder = 8;
+		Maps[2][6].DepartmentPrice = DepartmentPrice;
+		Maps[2][6].Owner = NONE;
+		Maps[2][6].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[3][6].NameOfDepartment, "소프트웨어공학전공");
+		Maps[3][6].DepartmentOrder = 9;
+		Maps[3][6].DepartmentPrice = DepartmentPrice;
+		Maps[3][6].Owner = NONE;
+		Maps[3][6].OverWhelmingDegree = NONE;
+
+		strcpy(Maps[4][6].NameOfDepartment, "스쿨버스");
+		Maps[4][6].DepartmentOrder = 10;
+		Maps[4][6].DepartmentPrice = 0;
+		Maps[4][6].EventNumber = SchoolBus;
+		Maps[4][6].Owner = NONE;
+		Maps[4][6].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[4][5].NameOfDepartment, "환경에너지공학과");
+		Maps[4][5].DepartmentOrder = 11;
+		Maps[4][5].DepartmentPrice = DepartmentPrice;
+		Maps[4][5].Owner = NONE;
+		Maps[4][5].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[4][4].NameOfDepartment, "생물공학과");
+		Maps[4][4].DepartmentOrder = 12;
+		Maps[4][4].DepartmentPrice = DepartmentPrice;
+		Maps[4][4].Owner = NONE;
+		Maps[4][4].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[4][3].NameOfDepartment, "금속재료공학전공");
+		Maps[4][3].DepartmentOrder = 13;
+		Maps[4][3].DepartmentPrice = DepartmentPrice;
+		Maps[4][3].Owner = NONE;
+		Maps[4][3].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[4][2].NameOfDepartment, "세라믹재료공학전공");
+		Maps[4][2].DepartmentOrder = 14;
+		Maps[4][2].DepartmentPrice = DepartmentPrice;
+		Maps[4][2].Owner = NONE;
+		Maps[4][2].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[4][1].NameOfDepartment, "광.전자재료전공");
+		Maps[4][1].DepartmentOrder = 15;
+		Maps[4][1].DepartmentPrice = DepartmentPrice;
+		Maps[4][1].Owner = NONE;
+		Maps[4][1].OverWhelmingDegree = NONE;
+
+		strcpy(Maps[4][0].NameOfDepartment, "족보");
+		Maps[4][0].DepartmentOrder = 16;
+		Maps[4][0].DepartmentPrice = DepartmentPrice;
+		Maps[4][0].EventNumber = Previous_Exam_Paper;
+		Maps[4][0].Owner = NONE;
+		Maps[4][0].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[3][0].NameOfDepartment, "화공소재전공");
+		Maps[3][0].DepartmentOrder = 17;
+		Maps[3][0].DepartmentPrice = DepartmentPrice;
+		Maps[3][0].Owner = NONE;
+		Maps[3][0].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[2][0].NameOfDepartment, "전기공학과");
+		Maps[2][0].DepartmentOrder = 18;
+		Maps[2][0].DepartmentPrice = DepartmentPrice;
+		Maps[2][0].Owner = NONE;
+		Maps[2][0].OverWhelmingDegree = NONE;
+
+		DepartmentPrice = ((rand() % 10) + 1) * 100;
+		strcpy(Maps[1][0].NameOfDepartment, "토목공학과");
+		Maps[1][0].DepartmentOrder = 19;
+		Maps[1][0].DepartmentPrice = DepartmentPrice;
+		Maps[1][0].Owner = NONE;
+		Maps[1][0].OverWhelmingDegree = NONE;
 	}
-
-	srand(time(NULL));
-
-	// 이름, 학과순서, 가격, 이벤트 숫자, 소유주숫자, 장악정도
-
-	strcpy(Maps[0][0].NameOfDepartment, "장학금");
-	Maps[0][0].DepartmentOrder = 0;
-	Maps[0][0].DepartmentPrice = 0;
-	Maps[0][0].EventNumber = Scholarship;
-	Maps[0][0].Owner = NULL;
-	Maps[0][0].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[0][1].NameOfDepartment, "건축도시설계전공");
-	Maps[0][1].DepartmentOrder = 1;
-	Maps[0][1].DepartmentPrice = DepartmentPrice;
-	Maps[0][1].Owner = NULL;
-	Maps[0][1].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[0][2].NameOfDepartment, "건축공학전공");
-	Maps[0][2].DepartmentOrder = 2;
-	Maps[0][2].DepartmentPrice = DepartmentPrice;
-	Maps[0][2].Owner = NULL;
-	Maps[0][2].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[0][3].NameOfDepartment, "고분자공학전공");
-	Maps[0][3].DepartmentOrder = 3;
-	Maps[0][3].DepartmentPrice = DepartmentPrice;
-	Maps[0][3].Owner = NULL;
-	Maps[0][3].OverWhelmingDegree = NULL;
 	
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[0][4].NameOfDepartment, "융합섬유공학전공");
-	Maps[0][4].DepartmentOrder = 4;
-	Maps[0][4].DepartmentPrice = DepartmentPrice;
-	Maps[0][4].Owner = NULL;
-	Maps[0][4].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[0][5].NameOfDepartment, "기계공학전공");
-	Maps[0][5].DepartmentOrder = 5;
-	Maps[0][5].DepartmentPrice = DepartmentPrice;
-	Maps[0][5].Owner = NULL;
-	Maps[0][5].OverWhelmingDegree = NULL;
-
-	strcpy(Maps[0][6].NameOfDepartment, "MT");
-	Maps[0][6].DepartmentOrder = 6;
-	Maps[0][6].DepartmentPrice = 0;
-	Maps[0][6].EventNumber = MT;
-	Maps[0][6].Owner = NULL;
-	Maps[0][6].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[1][6].NameOfDepartment, "전자정보통신공학전공");
-	Maps[1][6].DepartmentOrder = 7;
-	Maps[1][6].DepartmentPrice = DepartmentPrice;
-	Maps[1][6].Owner = NULL;
-	Maps[1][6].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[2][6].NameOfDepartment, "컴퓨터정보통신공학전공");
-	Maps[2][6].DepartmentOrder = 8;
-	Maps[2][6].DepartmentPrice = DepartmentPrice;
-	Maps[2][6].Owner = NULL;
-	Maps[2][6].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[3][6].NameOfDepartment, "소프트웨어공학전공");
-	Maps[3][6].DepartmentOrder = 9;
-	Maps[3][6].DepartmentPrice = DepartmentPrice;
-	Maps[3][6].Owner = NULL;
-	Maps[3][6].OverWhelmingDegree = NULL;
-
-	strcpy(Maps[4][6].NameOfDepartment, "스쿨버스");
-	Maps[4][6].DepartmentOrder = 10;
-	Maps[4][6].DepartmentPrice = 0;
-	Maps[4][6].EventNumber = SchoolBus;
-	Maps[4][6].Owner = NULL;
-	Maps[4][6].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[4][5].NameOfDepartment, "환경에너지공학과");
-	Maps[4][5].DepartmentOrder = 11;
-	Maps[4][5].DepartmentPrice = DepartmentPrice;
-	Maps[4][5].Owner = NULL;
-	Maps[4][5].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[4][4].NameOfDepartment, "생물공학과");
-	Maps[4][4].DepartmentOrder = 12;
-	Maps[4][4].DepartmentPrice = DepartmentPrice;
-	Maps[4][4].Owner = NULL;
-	Maps[4][4].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[4][3].NameOfDepartment, "금속재료공학전공");
-	Maps[4][3].DepartmentOrder = 13;
-	Maps[4][3].DepartmentPrice = DepartmentPrice;
-	Maps[4][3].Owner = NULL;
-	Maps[4][3].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[4][2].NameOfDepartment, "세라믹재료공학전공");
-	Maps[4][2].DepartmentOrder = 14;
-	Maps[4][2].DepartmentPrice = DepartmentPrice;
-	Maps[4][2].Owner = NULL;
-	Maps[4][2].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[4][1].NameOfDepartment, "광.전자재료전공");
-	Maps[4][1].DepartmentOrder = 15;
-	Maps[4][1].DepartmentPrice = DepartmentPrice;
-	Maps[4][1].Owner = NULL;
-	Maps[4][1].OverWhelmingDegree = NULL;
-
-	strcpy(Maps[4][0].NameOfDepartment, "족보");
-	Maps[4][0].DepartmentOrder = 16;
-	Maps[4][0].DepartmentPrice = DepartmentPrice;
-	Maps[4][0].EventNumber = Previous_Exam_Paper;
-	Maps[4][0].Owner = NULL;
-	Maps[4][0].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[3][0].NameOfDepartment, "화공소재전공");
-	Maps[3][0].DepartmentOrder = 17;
-	Maps[3][0].DepartmentPrice = DepartmentPrice;
-	Maps[3][0].Owner = NULL;
-	Maps[3][0].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[2][0].NameOfDepartment, "전기공학과");
-	Maps[2][0].DepartmentOrder = 18;
-	Maps[2][0].DepartmentPrice = DepartmentPrice;
-	Maps[2][0].Owner = NULL;
-	Maps[2][0].OverWhelmingDegree = NULL;
-
-	DepartmentPrice = ((rand() % 10) + 1) * 100;
-	strcpy(Maps[1][0].NameOfDepartment, "토목공학과");
-	Maps[1][0].DepartmentOrder = 19;
-	Maps[1][0].DepartmentPrice = DepartmentPrice;
-	Maps[1][0].Owner = NULL;
-	Maps[1][0].OverWhelmingDegree = NULL;
-	
-
 }
 
 void gotoxy(int x, int y)
@@ -266,10 +280,84 @@ void gotoxyAndPrint(int x, int y, char *m)
 
 void DrawCurrentBoard(struct Player Players[], struct Map Maps[][7], int currentTurn)
 {
-	int i, j;
+	int i = 0 , j = 0;
 	system("cls");
 	system("mode con: cols=138 lines=48");
 
+	// 맵의 전체적인 외형 만들기
+
+	DrawMapEdge(i, j);
+
+	// 컨텐츠 표현
+
+	DrawContents(Maps);
+
+	
+	char buffer[50] = "";
+	char tmp1[50] = "";
+	char tmp2[50] = "";
+
+	//플레이어들 스탯, 현 위치 표현
+	
+	PlayersInfo(Players, tmp1, tmp2, buffer, Maps);
+
+	// 현 플레이어의 정보( 아이템, 위치한 장소 )표현
+
+	CurrentPlayerInfo(Players, currentTurn, tmp1, buffer, Maps);
+
+	// 주사위 추가 할 것!!!
+
+	gotoxyAndPrint(2, 32, "this is for test");
+}
+
+void PrintMapInfo(int indexX, int indexY, int startposx, int startposy, struct Map Maps[][7]) 
+{
+	gotoxyAndPrint(startposx, startposy, Maps[indexX][indexY].NameOfDepartment);
+	
+			if (Maps[indexX][indexY].EventNumber == 0)
+			{
+				switch (Maps[indexX][indexY].Owner)
+				{	
+				case 0:	
+					gotoxyAndPrint(startposx, startposy + 1, "주인 : 없음");
+					break;
+				case 1:
+					gotoxyAndPrint(startposx, startposy + 1, "주인 : Player1");
+					break;
+				case 2:
+					gotoxyAndPrint(startposx, startposy + 1, "주인 : Player2");
+					break;
+				case 3:
+					gotoxyAndPrint(startposx, startposy + 1, "주인 : Player3");
+					break;
+				case 4:
+					gotoxyAndPrint(startposx, startposy + 1, "주인 : Player4");
+					break;
+				}
+	
+				switch (Maps[indexX][indexY].OverWhelmingDegree)
+				{
+				case 0:
+					gotoxyAndPrint(startposx, startposy + 2, "장악력 : 없음");
+					break;
+				case 1:
+					gotoxyAndPrint(startposx, startposy + 2, "장악력 : 25%");
+					break;
+				case 2:
+					gotoxyAndPrint(startposx, startposy + 2, "장악력 : 50%");
+					break;
+				case 3:
+					gotoxyAndPrint(startposx, startposy + 2, "장악력 : 75%");
+					break;
+				case 4:
+					gotoxyAndPrint(startposx, startposy + 2, "장악력 : 100%");
+					break;
+			}
+		}
+}
+
+void DrawMapEdge(int i, int j)
+{
 	// 외부테두리
 	gotoxyAndPrint(2, 1, "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓");
 	for (i = 2; i<31; i++)
@@ -327,7 +415,10 @@ void DrawCurrentBoard(struct Player Players[], struct Map Maps[][7], int current
 
 	gotoxyAndPrint(109, 7, "━");
 	gotoxyAndPrint(109, 25, "━");
+}
 
+void DrawContents(struct Map Maps[][7])
+{
 	// 컨텐츠 위쪽
 
 	int indexy = 0;
@@ -356,12 +447,11 @@ void DrawCurrentBoard(struct Player Players[], struct Map Maps[][7], int current
 	PrintMapInfo(1, 6, 112, 8, Maps);
 	PrintMapInfo(2, 6, 112, 14, Maps);
 	PrintMapInfo(3, 6, 112, 20, Maps);
+}
 
-	//플레이어들 스탯 표현 -> 함수화
-
-	char buffer[50] = "";
-	char tmp1[50] = "";
-	char tmp2[50] = "";
+void PlayersInfo(struct Player Players[], char tmp1[], char tmp2[], char buffer[], struct Map Maps[][7])
+{
+	// 건물 수와 재산
 
 	gotoxyAndPrint(22, 9, "[ 플레이어 : 건물수 / 재산 ]");
 
@@ -385,10 +475,21 @@ void DrawCurrentBoard(struct Player Players[], struct Map Maps[][7], int current
 	sprintf(buffer, "Player4 : %s / %s", tmp1, tmp2);
 	gotoxyAndPrint(22, 13, buffer);
 
-	// 현 플레이어가 가지고 있는 아이템 -> 함수화
+	// 플레이어들 맵상 위치 표현
 
-	// char buffer[50] = "";
-	// char tmp1[50] = "";
+	for (int NumberOfPlayers = 0; NumberOfPlayers < 4; NumberOfPlayers++)
+	{
+		int x, y;
+		itoa(NumberOfPlayers + 1, buffer, 10);
+		SearchMapPlace(&x, &y, Maps, Players, NumberOfPlayers);
+		gotoxyAndPrint(x, y, buffer);
+	}
+	
+}
+
+void CurrentPlayerInfo(struct Player Players[], int currentTurn, char tmp1[], char buffer[], struct Map Maps[][7])
+{
+	// 현 플레이어가 가지고 있는 아이템
 
 	gotoxyAndPrint(80, 9, "[ 현 플레이어의 아이템 목록 ]");
 
@@ -412,10 +513,7 @@ void DrawCurrentBoard(struct Player Players[], struct Map Maps[][7], int current
 	sprintf(buffer, "기부     : %s", tmp1);
 	gotoxyAndPrint(80, 14, buffer);
 
-	// 플레이어가 위치한 장소의 정보 -> 함수화 할 것
-
-	// char buffer[50] = "";
-	// char tmp1[50] = "";
+	// 현 위치에 대한 정보 표현
 
 	gotoxyAndPrint(22, 20, "[현재 플레이어가 위치한 장소의 정보]");
 
@@ -434,60 +532,20 @@ void DrawCurrentBoard(struct Player Players[], struct Map Maps[][7], int current
 		gotoxyAndPrint(22, 21, Maps[Players[currentTurn].CurrentPlaceX][Players[currentTurn].CurrentPlaceY].NameOfDepartment);
 	}
 
-	// 주사위 추가
-
-	// 플레이어 위치 표현
-	itoa(currentTurn + 1, tmp1, 10);
-	sprintf(buffer, "Player %s", tmp1);
-	gotoxyAndPrint(Players[currentTurn].CurrentPlaceX, Players[currentTurn].CurrentPlaceY, buffer);
-	
-
-	gotoxyAndPrint(2, 32, "this is for test");
 }
 
-void PrintMapInfo(int indexX, int indexY, int startposx, int startposy, struct Map Maps[][7]) 
+void SearchMapPlace(int* x, int* y, struct Map Maps[][7], struct Player Players[], int PlayerNumber)
 {
-	gotoxyAndPrint(startposx, startposy, Maps[indexX][indexY].NameOfDepartment);
-	
-			if (Maps[indexX][indexY].EventNumber == 0)
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 7; j++)
+		{
+			if ( Maps[i][j].pos.X == Players[PlayerNumber].CurrentPlaceX && Maps[i][j].pos.Y == Players[PlayerNumber].CurrentPlaceY )
 			{
-				switch (Maps[indexX][indexY].Owner)
-				{	
-				case 0:	
-					gotoxyAndPrint(startposx, startposy + 1, "주인 : 없음");
-					break;
-				case 1:
-					gotoxyAndPrint(startposx, startposy + 1, "주인 : Player1");
-					break;
-				case 2:
-					gotoxyAndPrint(startposx, startposy + 1, "주인 : Player2");
-					break;
-				case 3:
-					gotoxyAndPrint(startposx, startposy + 1, "주인 : Player3");
-					break;
-				case 4:
-					gotoxyAndPrint(startposx, startposy + 1, "주인 : Player4");
-					break;
-				}
-	
-				switch (Maps[indexX][indexY].OverWhelmingDegree)
-				{
-				case 0:
-					gotoxyAndPrint(startposx, startposy + 2, "장악력 : 없음");
-					break;
-				case 1:
-					gotoxyAndPrint(startposx, startposy + 2, "장악력 : 25%");
-					break;
-				case 2:
-					gotoxyAndPrint(startposx, startposy + 2, "장악력 : 50%");
-					break;
-				case 3:
-					gotoxyAndPrint(startposx, startposy + 2, "장악력 : 75%");
-					break;
-				case 4:
-					gotoxyAndPrint(startposx, startposy + 2, "장악력 : 100%");
-					break;
+				*x = Maps[i][j].pos.X;
+				*y = Maps[i][j].pos.Y;
+				return;
 			}
 		}
+	}
 }
-
