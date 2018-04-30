@@ -146,11 +146,11 @@ void PlayerStartPosEventChecker(struct Player Players[], struct Map Maps[][7], i
 {
 	if (Players[CurrentTurn].Events[MT] > 0)
 	{
-		Players[CurrentTurn].Events[MT] -= 1;
 		gotoxy(0, 33);
 		printf("MT로 %d일 동안 더 쉬어야 합니다.", Players[CurrentTurn].Events[MT]);
 		_sleep(3000);
 		TurnOverFlag = 1;
+		Players[CurrentTurn].Events[MT] -= 1;
 	}
 	else if (Players[CurrentTurn].Events[SchoolBus] > 0)
 	{
@@ -158,6 +158,7 @@ void PlayerStartPosEventChecker(struct Player Players[], struct Map Maps[][7], i
 		gotoxyAndPrint(0, 33, "스쿨버스를 타셨습니다. 어디로 가시겠습니까?\n(왼쪽 위부터 1번이고 시계방향으로 1씩 더해지는 순서입니다.)\n 가고자하는 위치를 입력해주세요 : ");
 		scanf_s("%d", &wheretogo);
 		Players[CurrentTurn].PlaceOrder = wheretogo;
+		Players[CurrentTurn].Events[SchoolBus] -= 1;
 	}
 	else
 		RollTheDIce(Players, Maps, CurrentTurn);
@@ -184,6 +185,8 @@ void RollTheDIce(struct Player Players[], struct Map Maps[][7], int CurrentTurn)
 			{
 				Players[CurrentTurn].PlaceOrder -= 20;
 				Players[CurrentTurn].Money += 5000;
+				gotoxyAndPrint(0, 33, "장학금을 지나쳤습니다아!!!!!!! 머니 += 5000 ");
+				_sleep(3000);
 			}
 				
 			DrawCurrentBoard(Players, Maps, CurrentTurn);
@@ -449,6 +452,7 @@ void BankruptHandler(struct Player Players[], struct Map Maps[][7], int CurrentT
 		{
 			gotoxy(2, 118);
 			printf("Player%d 는 파산입니다.", CurrentTurn+1);
+			_sleep(3000);
 			Players[Whoispoor(Players)].Money += Players[CurrentTurn].Money;
 			Players[CurrentTurn].isAlive = 0;
 			return;

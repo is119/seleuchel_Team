@@ -1,5 +1,5 @@
 ﻿  first.c
-c:\users\jsoat\documents\github\seleuchel_team\전세옥\programming_assignment\first.c(172): warning C4244: '함수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\jsoat\documents\github\seleuchel_team\전세옥\programming_assignment\first.c(388): warning C4244: '함수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\jsoat\documents\github\seleuchel_team\전세옥\programming_assignment\first.c(555): warning C4244: '함수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\jsoat\documents\github\seleuchel_team\전세옥\programming_assignment\first.c(173): warning C4244: '함수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\jsoat\documents\github\seleuchel_team\전세옥\programming_assignment\first.c(391): warning C4244: '함수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\jsoat\documents\github\seleuchel_team\전세옥\programming_assignment\first.c(559): warning C4244: '함수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   JNUBlueMarble.vcxproj -> C:\Users\jsoat\Documents\GitHub\seleuchel_Team\전세옥\Programming_Assignment\JNUBlueMarble\Debug\JNUBlueMarble.exe
