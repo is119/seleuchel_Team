@@ -20,13 +20,22 @@ Debian or Ubuntu Dependencies:
 sudo apt-get install automake autoconf libtool libjansson-dev libcurl4-openssl-dev
 Redhat, Fedora, Centos or RPM based distros:
 
+
+
 yum install libtool jansson-devel
+
+
+
 To compile on Linux, BSD, or Mac OS X:
+
 
 autoreconf -fi
 ./configure
 make
 sudo make install
+
+
+
 If you wish to build the examples in the 'examples' directory:
 
 autoreconf -fi
