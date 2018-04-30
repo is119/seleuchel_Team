@@ -3,11 +3,11 @@
 #include <time.h>
 #include <string.h>
 #include <windows.h>
-#include <math.h>
 #include <conio.h>
 
-#define InitialCapital 5000
 #pragma warning ( disable : 4996 )
+
+#define InitialCapital 5000
 #define _CRT_SECURE_NO_WARNINGS
 
 // 이벤트 배열 순서 -> 그대로 사용
@@ -268,7 +268,7 @@ void PayTollFee(int Giver, int Recipient, int i, int j, struct Player Players[],
 	{
 		gotoxy(0, 33);
 		printf("Player%d 님이 Player%d의 땅을 밟으셨습니다.\n", Giver + 1, Recipient + 1);
-		printf("프리패스 아이템을 씁니다.", Giver + 1, Recipient + 1);
+		printf("프리패스 아이템을 씁니다.");
 		_sleep(3000);
 
 		Players[Giver].Items[FreePass - 5] -= 1;
