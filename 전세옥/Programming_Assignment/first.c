@@ -3,8 +3,8 @@
 #include <time.h>
 #include <string.h>
 #include <windows.h>
-#include <conio.h>
 #include <math.h>
+#include <conio.h>
 
 #define InitialCapital 5000
 #pragma warning ( disable : 4996 )
@@ -56,10 +56,11 @@ void DrawContents(struct Map Maps[][7]);
 void PlayersInfo(struct Player Players[], char tmp1[], char tmp2[], char buffer[], struct Map Maps[][7]);
 void CurrentPlayerInfo(struct Player Players[], int currentTurn, char tmp1[], char buffer[], struct Map Maps[][7]);
 void SearchMapPlace(int* x, int* y, struct Map Maps[][7], struct Player Players[], int PlayerNumber);
+void SearchMapPlaceForMap(int* x, int* y, struct Map Maps[][7], struct Player Players[], int PlayerNumber);
 void gotoxyAndPrint(int x, int y, char *m);
 void gotoxy(int x, int y);
 
-void PlayGame(struct Player Players[], struct Map Maps[][7], int CurrentTurn);
+int PlayGame(struct Player Players[], struct Map Maps[][7], int CurrentTurn);
 void PlayerStartPosEventChecker(struct Player Players[], struct Map Maps[][7], int CurrentTurn);
 void RollTheDIce(struct Player Players[], struct Map Maps[][7], int CurrentTurn);
 void PlayerMovedPosEventChecker(struct Player Players[], struct Map Maps[][7], int CurrentTurn);
@@ -69,14 +70,18 @@ void DonationEventHandler(struct Player Players[], struct Map Maps[][7], int Cur
 void BankruptHandler(struct Player Players[], struct Map Maps[][7], int CurrentTurn, int MoneyToPay);
 int FindMostExpensiveDepartment(struct Player Players[], struct Map Maps[][7], int CurrentTurn);
 int Whoispoor(struct Player Players[]);
+void PayTollFee(int Giver, int Recipient, int i, int j, struct Player Players[], struct Map Maps[][7]);
 
 int main (void)
 {
 	struct Player player[4];
 	struct Map map[5][7]; // 세로 5칸, 가로 7 칸
+	int winner = 0;
 	int currentTurn = 0;
+
 	InitMapAndPlayer(player, map);
-	PlayGame(player, map, currentTurn);
+	winner = PlayGame(player, map, currentTurn);
+	
 
 	system("pause");
 	return 0;
@@ -100,12 +105,13 @@ int main (void)
 
 int TurnOverFlag = 0;
 
-void PlayGame(struct Player Players[], struct Map Maps[][7], int CurrentTurn) // 아직 안씀
+int PlayGame(struct Player Players[], struct Map Maps[][7], int CurrentTurn) // 아직 안씀
 {
+
+	int deadpeople = 0;
+
 	while (1)
 	{
-		int deadpeople = 0;
-
 		DrawCurrentBoard(Players, Maps, CurrentTurn);
 		PlayerStartPosEventChecker(Players, Maps, CurrentTurn);
 		DrawCurrentBoard(Players, Maps, CurrentTurn);
@@ -119,9 +125,18 @@ void PlayGame(struct Player Players[], struct Map Maps[][7], int CurrentTurn) //
 		{
 			TurnOverFlag = 0;
 			CurrentTurn += 1;
-			while(Players[CurrentTurn].isAlive != 1)
+			while (Players[CurrentTurn].isAlive != 1)
+			{
 				CurrentTurn += 1;
-			return;
+
+				if (CurrentTurn >= 4)
+					CurrentTurn = 0;
+			}
+
+			if (CurrentTurn >= 4)
+				CurrentTurn = 0;
+
+			continue;
 		}
 
 		for (int i = 0; i < 4; i++)
@@ -132,7 +147,11 @@ void PlayGame(struct Player Players[], struct Map Maps[][7], int CurrentTurn) //
 
 		if (deadpeople == 3)
 		{
-			return;
+			for (int i = 0; i < 4; i++)
+			{
+				if (Players[i].isAlive == 0)
+					return i;
+			}
 		}
 	}
 }  
@@ -160,21 +179,26 @@ void RollTheDIce(struct Player Players[], struct Map Maps[][7], int CurrentTurn)
 
 	char SpaceBarInput = 0;
 	int randomNumber = 0;
+
+	srand(time(NULL));
+	gotoxyAndPrint(0, 33, "스페이스바를 눌러 주사위를 굴리세요");
 	while (1)
 	{
-		srand(time(NULL));
-		if (kbhit() && SpaceBarInput == 32)
+		
+		kbhit();
+		SpaceBarInput = getch();
+		if (SpaceBarInput == 32)
 		{
 			randomNumber = (rand() % 6) + 1;
 			Players[CurrentTurn].PlaceOrder += randomNumber;
 			DrawCurrentBoard(Players, Maps, CurrentTurn);
+			return;
 		}
 	}
 }
 
 void PlayerMovedPosEventChecker(struct Player Players[], struct Map Maps[][7], int CurrentTurn )
 {
-	// 현 플레이어의 위치를 찾기 위해
 	int NumberForEvent = 0;
 
 	for (int i = 0; i < 4; i++)
@@ -184,6 +208,11 @@ void PlayerMovedPosEventChecker(struct Player Players[], struct Map Maps[][7], i
 			if (Maps[i][j].DepartmentOrder == Players[CurrentTurn].PlaceOrder)
 			{
 				NumberForEvent = Maps[i][j].EventNumber;
+			}
+
+			if (Maps[i][j].Owner > 0)
+			{
+				PayTollFee(CurrentTurn, Maps[i][j].Owner, i, j, Players, Maps);
 			}
 		}
 	}
@@ -225,7 +254,18 @@ void PlayerMovedPosEventChecker(struct Player Players[], struct Map Maps[][7], i
 		TurnOverFlag = 1;
 		break;
 	}
+
 } // 이동 후 위치 이벤트 확인
+
+void PayTollFee(int Giver, int Recipient, int i, int j, struct Player Players[], struct Map Maps[][7])
+{
+	gotoxy(0, 33);
+	printf("Player%d 님이 Player%d의 땅을 밟으셨습니다.\n", Giver, Recipient);
+	printf("통행료로 %d를 Player%d님에게 줍니다.", Maps[i][j].DepartmentPrice, Recipient);
+
+	Players[Giver].Money -= Maps[i][j].DepartmentPrice;
+	Players[Recipient].Money += Maps[i][j].DepartmentPrice;
+}
 
 void BuyingDepartmentProcess(struct Player Players[], struct Map Maps[][7], int CurrentTurn)
 {
@@ -248,7 +288,8 @@ void BuyingDepartmentProcess(struct Player Players[], struct Map Maps[][7], int 
 						TurnOverFlag = 1;
 						return;
 					}
-					gotoxy(2, 118);
+
+					gotoxy(0, 33);
 					printf("기본가격은 %d 입니다.", Maps[i][j].DepartmentPrice);
 					gotoxyAndPrint(2, 118, "얼마나 장악하시겠습니까? (25, 50, 75, 100 중 택 1) : ");
 					scanf_s("%d", &OverwhelmingDegree);
@@ -257,13 +298,12 @@ void BuyingDepartmentProcess(struct Player Players[], struct Map Maps[][7], int 
 					switch (OverwhelmingDegree)
 					{
 					case 25 :
-						if (Players[CurrentTurn].Money < pow((double)departmentprice, 1.0))
+						if (Players[CurrentTurn].Money < departmentprice)
 						{
 							BankruptHandler(Players, Maps, CurrentTurn, departmentprice);
 						}
-						
+						Maps[i][j].OverWhelmingDegree = 25;
 						Players[CurrentTurn].Money -= departmentprice;
-						gotoxyAndPrint(2, 118, "구매를 완료했습니다.");
 						break;
 					case 50:
 						departmentprice = departmentprice * 2;
@@ -271,8 +311,8 @@ void BuyingDepartmentProcess(struct Player Players[], struct Map Maps[][7], int 
 						{
 							BankruptHandler(Players, Maps, CurrentTurn, departmentprice);
 						}
+						Maps[i][j].OverWhelmingDegree = 50;
 						Players[CurrentTurn].Money -= departmentprice;
-						gotoxyAndPrint(2, 118, "구매를 완료했습니다.");
 						break;
 					case 75:
 						departmentprice = departmentprice * 3;
@@ -280,8 +320,8 @@ void BuyingDepartmentProcess(struct Player Players[], struct Map Maps[][7], int 
 						{
 							BankruptHandler(Players, Maps, CurrentTurn, departmentprice);
 						}
+						Maps[i][j].OverWhelmingDegree = 75;
 						Players[CurrentTurn].Money -= departmentprice;
-						gotoxyAndPrint(2, 118, "구매를 완료했습니다.");
 						break;
 					case 100:
 						departmentprice = departmentprice * 4;
@@ -290,12 +330,19 @@ void BuyingDepartmentProcess(struct Player Players[], struct Map Maps[][7], int 
 							BankruptHandler(Players, Maps, CurrentTurn, departmentprice);
 						}
 						Players[CurrentTurn].Money -= departmentprice;
-						gotoxyAndPrint(2, 118, "구매를 완료했습니다.");
+						Maps[i][j].OverWhelmingDegree = 100;
+						Maps[i][j].Owner = CurrentTurn;
 						break;
 					}
+					gotoxyAndPrint(2, 118, "구매를 완료했습니다.");
+					Players[CurrentTurn].NumberOfDepartment++;
+					
 
 				}
-				gotoxyAndPrint(2, 118, "이 과의 장악력은 100퍼센트이기에 구매할 수 없습니다!");
+				else
+					gotoxyAndPrint(2, 118, "이 과의 장악력은 100퍼센트이기에 구매할 수 없습니다!");
+
+				return;
 			}
 		}
 	}
@@ -419,6 +466,7 @@ int Whoispoor(struct Player Players[])
 	return who;
 }
 
+
 // 맵 그리는 함수들
 
 void InitMapAndPlayer(struct Player Players[], struct Map Maps[][7])
@@ -429,7 +477,7 @@ void InitMapAndPlayer(struct Player Players[], struct Map Maps[][7])
 
 		for (int i = 0; i < NumberOfPlayers; i++)
 		{
-			Players[i].PlaceOrder = 0;
+			Players[i].PlaceOrder = 1;
 			Players[i].Money = InitialCapital;
 			Players[i].NumberOfDepartment = 0;
 			Players[i].isAlive = 1;
@@ -513,7 +561,7 @@ void InitMapAndPlayer(struct Player Players[], struct Map Maps[][7])
 			Maps[0][4].Owner = NONE;
 			Maps[0][4].OverWhelmingDegree = NONE;
 			Maps[0][4].pos.X = 76;
-			Maps[0][2].pos.Y = 6;
+			Maps[0][4].pos.Y = 6;
 
 			DepartmentPrice = ((rand() % 10) + 1) * 100;
 			strcpy(Maps[0][5].NameOfDepartment, "기계공학전공");
@@ -522,7 +570,7 @@ void InitMapAndPlayer(struct Player Players[], struct Map Maps[][7])
 			Maps[0][5].Owner = NONE;
 			Maps[0][5].OverWhelmingDegree = NONE;
 			Maps[0][5].pos.X = 94;
-			Maps[0][2].pos.Y = 6;
+			Maps[0][5].pos.Y = 6;
 
 			strcpy(Maps[0][6].NameOfDepartment, "MT");
 			Maps[0][6].DepartmentOrder = 7;
@@ -693,7 +741,8 @@ void DrawCurrentBoard(struct Player Players[], struct Map Maps[][7], int current
 		// 현 플레이어의 정보( 아이템, 위치한 장소 )표현
 
 		CurrentPlayerInfo(Players, currentTurn, tmp1, buffer, Maps);
-		gotoxyAndPrint(112, 150, "this is for test");
+		gotoxy(0, 32);
+		printf("%d 번 플레이어 차례 입니다.\n", currentTurn + 1);
 	}
 
 void PrintMapInfo(int indexX, int indexY, int startposx, int startposy, struct Map Maps[][7])
@@ -857,12 +906,19 @@ void PlayersInfo(struct Player Players[], char tmp1[], char tmp2[], char buffer[
 
 		for (int NumberOfPlayers = 0; NumberOfPlayers < 4; NumberOfPlayers++)
 		{
-			int x, y;
 			if (Players[NumberOfPlayers].isAlive == 1)
 			{
-				itoa(NumberOfPlayers + 1, buffer, 10);
-				SearchMapPlace(&x, &y, Maps, Players, NumberOfPlayers);
-				gotoxyAndPrint(x, y, buffer);
+				for (int i = 0; i < 5; i++)
+				{
+					for (int j = 0; j < 7; j++)
+					{
+						if (Maps[i][j].DepartmentOrder == Players[NumberOfPlayers].PlaceOrder)
+						{
+							itoa(NumberOfPlayers + 1, buffer, 10);
+							gotoxyAndPrint(Maps[i][j].pos.X + NumberOfPlayers , Maps[i][j].pos.Y, buffer);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -899,7 +955,7 @@ void CurrentPlayerInfo(struct Player Players[], int currentTurn, char tmp1[], ch
 		// 현 위치에 대한 정보 표현
 
 		gotoxyAndPrint(22, 20, "[현재 플레이어가 위치한 장소의 정보]");
-		SearchMapPlace(&x, &y, Maps, Players, currentTurn);
+		SearchMapPlaceForMap(&x, &y, Maps, Players, currentTurn);
 		if (Maps[x][y].EventNumber == NONE)
 		{
 			itoa(Maps[x][y].DepartmentPrice, tmp1, 10);
@@ -933,7 +989,26 @@ void SearchMapPlace(int* x, int* y, struct Map Maps[][7], struct Player Players[
 		}
 	}
 
+void SearchMapPlaceForMap(int* x, int* y, struct Map Maps[][7], struct Player Players[], int PlayerNumber)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 7; j++)
+		{
+			if (Maps[i][j].DepartmentOrder == Players[PlayerNumber].PlaceOrder)
+			{
+				*x = i;
+				*y = j;
+				return;
+			}
+		}
+	}
+}
+
+
 
 //디버깅 해야 될 것들
-//1. 테스트 메세지가 안움직임
-//2. 플레이가 되고 있는지 모르겠음(함수가 제대로 돌아가는지) 확인 할 수 있게 해야 함
+//1. 스쿨버스 메세지가 안뜸
+//2. 동시에 톨비 줄때 메세지가 안사라짐
+//3. 톨비 주는 것이 정확하지 않음
+//4. 1명이라도 파산되면 이후 게임 진행이 안됨.
