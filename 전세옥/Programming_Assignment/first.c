@@ -195,7 +195,11 @@ void RollTheDIce(struct Player Players[], struct Map Maps[][7], int CurrentTurn)
 			randomNumber = (rand() % 6) + 1;
 			Players[CurrentTurn].PlaceOrder += randomNumber;
 			if (Players[CurrentTurn].PlaceOrder > 20)
+			{
 				Players[CurrentTurn].PlaceOrder -= 20;
+				Players[CurrentTurn].Money += 5000;
+			}
+				
 			DrawCurrentBoard(Players, Maps, CurrentTurn);
 			return;
 		}
@@ -234,6 +238,7 @@ void PlayerMovedPosEventChecker(struct Player Players[], struct Map Maps[][7], i
 			if (yesorno == 1) // 플레이어가 y를 선택했을때
 			{
 				TurnOverFlag = 1;
+				Players[CurrentTurn].Items[MT] -= 1;
 				return;
 			}
 		}
@@ -423,12 +428,16 @@ void Previous_Exam_PaperEventHandler(struct Player Players[], struct Map Maps[][
 
 void DonationEventHandler(struct Player Players[] ,struct Map Maps[][7], int CurrentTurn)
 {
-	if (Players[CurrentTurn].Money < 20000)
-		BankruptHandler(Players, Maps, CurrentTurn, 20000);
+	if (Players[CurrentTurn].Money < 2000)
+		BankruptHandler(Players, Maps, CurrentTurn, 2000);
 	else
 	{
-		Players[CurrentTurn].Money -= 20000;
-		Players[Whoispoor(Players)].Money += 20000;
+		int PoorestPlayer = Whoispoor(Players);
+		Players[CurrentTurn].Money -= 2000;
+		Players[PoorestPlayer].Money += 2000;
+		gotoxy(0, 33);
+		printf("%d번 플레이어가 %d번 플레이어에게 기부를 합니다.", CurrentTurn+1, PoorestPlayer+1);
+		_sleep(3000);
 	}
 }
 
@@ -1017,8 +1026,6 @@ void CurrentPlayerInfo(struct Player Players[], int currentTurn, char tmp1[], ch
 				}
 			}
 		}
-		
-
 	}
 
 void SearchMapPlace(int* x, int* y, struct Map Maps[][7], struct Player Players[], int PlayerNumber)
