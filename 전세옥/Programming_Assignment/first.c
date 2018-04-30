@@ -82,11 +82,11 @@ int main (void)
 	InitMapAndPlayer(player, map);
 	winner = PlayGame(player, map, currentTurn);
 	
-
+	system("cls");
+	printf("플레이어%d번이 승리하셨습니다.!!!", winner);
 	system("pause");
 	return 0;
 }
-
 
 int TurnOverFlag = 0;
 
@@ -123,22 +123,21 @@ int PlayGame(struct Player Players[], struct Map Maps[][7], int CurrentTurn) // 
 			if (CurrentTurn >= 4)
 				CurrentTurn = 0;
 
-			continue;
-		}
-
-		for (int i = 0; i < 4; i++)
-		{
-			if (Players[i].isAlive == 0)
-				deadpeople += 1;
-		}
-
-		if (deadpeople == 3)
-		{
 			for (int i = 0; i < 4; i++)
 			{
 				if (Players[i].isAlive == 0)
-					return i;
+					deadpeople += 1;
 			}
+
+			if (deadpeople == 3)
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					if (Players[i].isAlive == 1)
+						return i+1;
+				}
+			}
+			continue;
 		}
 	}
 }  
@@ -347,6 +346,7 @@ void BuyingDepartmentProcess(struct Player Players[], struct Map Maps[][7], int 
 							if (Players[CurrentTurn].Money < departmentprice)
 							{
 								BankruptHandler(Players, Maps, CurrentTurn, departmentprice);
+								return;
 							}
 							Players[CurrentTurn].Money -= departmentprice;
 							Maps[i][j].OverWhelmingDegree = 100;
@@ -451,6 +451,7 @@ void BankruptHandler(struct Player Players[], struct Map Maps[][7], int CurrentT
 			printf("Player%d 는 파산입니다.", CurrentTurn+1);
 			Players[Whoispoor(Players)].Money += Players[CurrentTurn].Money;
 			Players[CurrentTurn].isAlive = 0;
+			return;
 		}
 			
 	}
